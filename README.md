@@ -21,15 +21,13 @@ Fortnite-style hit damage numbers display plugin for Counter-Strike 2, built spe
 
 ## 📂 Particle Asset Naming Convention
 
-Based on the asset layout:
-- Directory: `particles/thuyskieu/hit_damage/`
-- Main Particle: `7mau_dmg_{digit}_{side}{crit}.vpcf`
-- Child Particle: `7mau_dmg_{digit}_{side}{crit}_child.vpcf`
+Based on the 20-file optimized asset layout:
+- Directory: `particles/thuyskieu/hdg/`
+- Normal Hit: `7mau_dmg_{digit}_n.vpcf` (digits 0 - 9)
+- Headshot Hit: `7mau_dmg_{digit}_h.vpcf` (digits 0 - 9)
 
 Token definitions:
 - `{digit}`: Digit number (`0` through `9`).
-- `{side}`: Visual side (`fl` for front left, `fr` for front right).
-- `{crit}`: Headshot suffix (`_crit` on headshot, empty string for body/limb hits).
 
 ---
 
@@ -62,17 +60,12 @@ Automatically generated from `resources/templates/config.template.jsonc`:
     // Allow players spectating the attacker to also see the damage particles
     "SpectatorsCanSee": true,
 
-    // Particle asset path configuration (fully customizable - no hardcoded paths!)
+    // Particle asset path configuration (Placeholders: {digit} for 0-9)
     "Particles": {
-      // Placeholders: {digit} (0-9), {side} (fr/fl), {crit} (suffix or empty)
-      "PathPattern": "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}.vpcf",
-      "ChildPathPattern": "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}_child.vpcf",
-      // Set to false if your particle pack does not use child particles
-      "EnableChild": true,
-      "SideRight": "fr",
-      "SideLeft": "fl",
-      "CritSuffix": "_crit",
-      "NonCritSuffix": ""
+      // Normal hit damage particle pattern
+      "NMPathPattern": "particles/thuyskieu/hdg/7mau_dmg_{digit}_n.vpcf",
+      // Headshot / Critical hit damage particle pattern
+      "HSPathPattern": "particles/thuyskieu/hdg/7mau_dmg_{digit}_h.vpcf"
     },
 
     // Shotgun damage accumulation settings (pellet grouping)
@@ -86,10 +79,8 @@ Automatically generated from `resources/templates/config.template.jsonc`:
     "Display": {
       // Distance in game units to pull numbers toward the attacker (prevents clipping inside victim model, Default: 40.0)
       "Distance": 40.0,
-      // Lifetime of the primary damage particle in seconds (Default: 0.5s)
-      "DurationSeconds": 0.5,
-      // Lifetime of the child damage particle in seconds (Default: 2.5s)
-      "ChildDurationSeconds": 2.5,
+      // Lifetime of the damage particle in seconds (Default: 2.0s)
+      "DurationSeconds": 2.0,
       // Base spacing between digits
       "SpacingBase": 6.0,
       // Distance threshold where digit spacing scales up for readability

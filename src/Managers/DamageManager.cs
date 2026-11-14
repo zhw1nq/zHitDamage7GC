@@ -14,12 +14,14 @@ public sealed class DamageManager
 {
     private readonly ISwiftlyCore _core;
     private readonly IOptionsMonitor<PluginConfig> _configMonitor;
-    private readonly PlayerManager _playerManager;
     private readonly ILogger _logger;
 
     private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, ShotgunData>> _shotgunData = new();
     private readonly ConcurrentDictionary<int, List<CHandle<CParticleSystem>>> _activeParticles = new();
     private readonly Random _random = new();
+
+    private string[] _normalPaths = new string[10];
+    private string[] _headshotPaths = new string[10];
 
     private sealed class ShotgunData
     {
@@ -34,13 +36,29 @@ public sealed class DamageManager
     public DamageManager(
         ISwiftlyCore core,
         IOptionsMonitor<PluginConfig> configMonitor,
-        PlayerManager playerManager,
+        PlayerManager _,
         ILogger logger)
     {
         _core = core;
         _configMonitor = configMonitor;
-        _playerManager = playerManager;
         _logger = logger;
+
+        UpdateCachedPaths(_configMonitor.CurrentValue);
+        _configMonitor.OnChange(UpdateCachedPaths);
+    }
+
+    private void UpdateCachedPaths(PluginConfig config)
+    {
+        var normal = new string[10];
+        var headshot = new string[10];
+        for (int i = 0; i < 10; i++)
+        {
+            var digitStr = i.ToString();
+            normal[i] = config.Particles.NMPathPattern.Replace("{digit}", digitStr);
+            headshot[i] = config.Particles.HSPathPattern.Replace("{digit}", digitStr);
+        }
+        _normalPaths = normal;
+        _headshotPaths = headshot;
     }
 
     public void ProcessDamage(IPlayer attacker, IPlayer victim, int damage, bool isCrit, string weapon)
@@ -300,15 +318,13 @@ public sealed class DamageManager
         basePos.Z += baseHeight + verticalSpread;
 
         var dif = config.Display.Distance;
-        var firstMainPath = string.Empty;
-        var firstChildPath = string.Empty;
+        var firstParticlePath = string.Empty;
 
         // Loop from most significant digit down to 0 (matches Metamod)
         for (int i = count - 1; i >= 0; i--)
         {
             var digit = dmgnums[i];
-            var currentL = l;
-            var isLeft = l-- > 0;
+            var currentL = l--;
 
             var digitPos = new Vector(
                 basePos.X - (fwd.X * dif + right.X * d * currentL),
@@ -316,20 +332,18 @@ public sealed class DamageManager
                 basePos.Z
             );
 
-            var (mainCreated, mainPath, childPath) = SpawnDigitParticle(
+            var path = SpawnDigitParticle(
                 attacker,
                 digit,
                 digitPos,
                 eyeAngles,
                 isCrit,
-                isLeft,
                 config
             );
 
             if (i == count - 1)
             {
-                firstMainPath = mainPath;
-                firstChildPath = childPath;
+                firstParticlePath = path;
             }
         }
 
@@ -340,41 +354,37 @@ public sealed class DamageManager
         if (config.Debug)
         {
             var victimName = victim?.Name ?? "Unknown";
-            var orderedDigits = dmgnums.AsEnumerable().Reverse();
             attacker.SendChat($"[gold][DEBUG] [default]Hit [green]{victimName} [default]| Dmg: [gold]{damage} [default]| Headshot: [{(isCrit ? "lightred" : "grey")}]{isCrit} [default]| Wep: [lime]{weapon}");
-            attacker.SendChat($"[gold][DEBUG] [default]Digits: [gold]{string.Join("", orderedDigits)} [default]| Particle: [lightblue]{firstMainPath}");
-            if (config.Particles.EnableChild)
-            {
-                attacker.SendChat($"[gold][DEBUG] [default]Child: [lightblue]{firstChildPath}");
-            }
+            attacker.SendChat($"[gold][DEBUG] [default]Particle: [lightblue]{firstParticlePath}");
         }
     }
 
-    private (bool created, string mainPath, string childPath) SpawnDigitParticle(
+    private string SpawnDigitParticle(
         IPlayer attacker,
         int digit,
         Vector position,
         QAngle angles,
         bool isCrit,
-        bool isLeft,
         PluginConfig config)
     {
-        var side = isLeft ? config.Particles.SideLeft : config.Particles.SideRight;
-        var crit = isCrit ? config.Particles.CritSuffix : config.Particles.NonCritSuffix;
+        var paths = isCrit ? _headshotPaths : _normalPaths;
+        var path = (digit >= 0 && digit < paths.Length) ? paths[digit] : string.Empty;
 
-        var mainPath = FormatPath(config.Particles.PathPattern, digit, side, crit);
-        var childPath = FormatPath(config.Particles.ChildPathPattern, digit, side, crit);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
 
         try
         {
             var particle = _core.EntitySystem.CreateEntityByDesignerName<CParticleSystem>("info_particle_system");
             if (particle == null)
             {
-                _logger.LogWarning("[zHitDamage7GC] Failed to create info_particle_system for path: {Path}", mainPath);
-                return (false, mainPath, childPath);
+                _logger.LogWarning("[zHitDamage7GC] Failed to create info_particle_system for path: {Path}", path);
+                return path;
             }
 
-            particle.EffectName = mainPath;
+            particle.EffectName = path;
             particle.StartActive = true;
             particle.Teleport(position, angles, null);
             particle.DispatchSpawn();
@@ -388,78 +398,25 @@ public sealed class DamageManager
             _core.Scheduler.DelayBySeconds(duration, () =>
             {
                 UntrackParticle(attacker.PlayerID, handle);
-                if (handle.IsValid && handle.Value is { } mainEntity)
+                if (handle.IsValid && handle.Value is { } entity)
                 {
                     try
                     {
-                        mainEntity.Despawn();
+                        entity.Despawn();
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogDebug(ex, "[zHitDamage7GC] Error despawning main particle.");
-                    }
-                }
-
-                if (config.Particles.EnableChild)
-                {
-                    SpawnChildParticle(attacker, childPath, position, angles, config);
-                }
-            });
-
-            return (true, mainPath, childPath);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[zHitDamage7GC] Error creating damage particle {Path}", mainPath);
-            return (false, mainPath, childPath);
-        }
-    }
-
-    private void SpawnChildParticle(
-        IPlayer attacker,
-        string childPath,
-        Vector position,
-        QAngle angles,
-        PluginConfig config)
-    {
-        try
-        {
-            var childParticle = _core.EntitySystem.CreateEntityByDesignerName<CParticleSystem>("info_particle_system");
-            if (childParticle == null)
-            {
-                return;
-            }
-
-            childParticle.EffectName = childPath;
-            childParticle.StartActive = true;
-            childParticle.Teleport(position, angles, null);
-            childParticle.DispatchSpawn();
-
-            ApplyTransmitRules(childParticle, attacker, config);
-
-            var childHandle = _core.EntitySystem.GetRefEHandle(childParticle);
-            TrackParticle(attacker.PlayerID, childHandle);
-
-            var childDuration = Math.Max(0.1f, config.Display.ChildDurationSeconds);
-            _core.Scheduler.DelayBySeconds(childDuration, () =>
-            {
-                UntrackParticle(attacker.PlayerID, childHandle);
-                if (childHandle.IsValid && childHandle.Value is { } childEntity)
-                {
-                    try
-                    {
-                        childEntity.Despawn();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug(ex, "[zHitDamage7GC] Error despawning child particle.");
+                        _logger.LogDebug(ex, "[zHitDamage7GC] Error despawning particle.");
                     }
                 }
             });
+
+            return path;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[zHitDamage7GC] Error creating child particle {Path}", childPath);
+            _logger.LogError(ex, "[zHitDamage7GC] Error creating damage particle {Path}", path);
+            return path;
         }
     }
 
@@ -528,12 +485,9 @@ public sealed class DamageManager
         }
     }
 
-    public static string FormatPath(string pattern, int digit, string side, string crit)
+    public static string FormatPath(string pattern, int digit)
     {
-        return pattern
-            .Replace("{digit}", digit.ToString())
-            .Replace("{side}", side)
-            .Replace("{crit}", crit);
+        return pattern.Replace("{digit}", digit.ToString());
     }
 
     private void TrackParticle(int playerId, CHandle<CParticleSystem> handle)

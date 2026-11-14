@@ -25,13 +25,8 @@ public sealed class PluginConfig
 
 public sealed class ParticleConfig
 {
-    public string PathPattern { get; set; } = "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}.vpcf";
-    public string ChildPathPattern { get; set; } = "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}_child.vpcf";
-    public bool EnableChild { get; set; } = true;
-    public string SideRight { get; set; } = "fr";
-    public string SideLeft { get; set; } = "fl";
-    public string CritSuffix { get; set; } = "_crit";
-    public string NonCritSuffix { get; set; } = "";
+    public string NMPathPattern { get; set; } = "particles/thuyskieu/hdg/7mau_dmg_{digit}_n.vpcf";
+    public string HSPathPattern { get; set; } = "particles/thuyskieu/hdg/7mau_dmg_{digit}_h.vpcf";
 }
 
 public sealed class ShotgunConfig
@@ -43,8 +38,7 @@ public sealed class ShotgunConfig
 public sealed class DisplayConfig
 {
     public float Distance { get; set; } = 40.0f;
-    public float DurationSeconds { get; set; } = 0.5f;
-    public float ChildDurationSeconds { get; set; } = 2.5f;
+    public float DurationSeconds { get; set; } = 2.0f;
     public float SpacingBase { get; set; } = 6.0f;
     public float DistanceScaleThreshold { get; set; } = 700.0f;
     public float HeightOffsetStandingNormal { get; set; } = 35.0f;
