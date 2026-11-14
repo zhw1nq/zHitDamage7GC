@@ -1,0 +1,8 @@
+{
+  "prefix": "[gold]zHitDamage7GC [silver]» ",
+  "command.enabled": "[green]Отображение урона [default]включено!",
+  "command.disabled": "[red]Отображение урона [default]выключено!",
+  "command.no_access": "[red]У вас нет доступа к этой функции!",
+  "command.only_players": "[red]Эта команда может быть использована только игроками!"
+}
+

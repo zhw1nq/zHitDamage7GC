@@ -1,0 +1,76 @@
+{
+  "HitDamage": {
+    // Enable or disable the entire hit damage plugin
+    "Enabled": true,
+
+    // Whether all players have access to hit damage display (Default: true)
+    "FreeAccess": true,
+
+    // Permission required when FreeAccess is false (e.g., "zhitdamage.vip")
+    "RequiredPermission": "",
+
+    // Chat and console command triggers (e.g., !hit, !hits, !damage, !dmg, !damages)
+    "Commands": [ "hit", "hits", "damage", "dmg", "damages" ],
+    "CommandsEnabled": true,
+
+    // When true, prints detailed damage, weapon, headshot, and particle paths to attacker's chat on every hit
+    "Debug": false,
+
+    // Transmit damage particles only to the attacker (significant performance and network optimization)
+    "OnlyAttackerVisible": true,
+
+    // Allow players spectating the attacker to also see the damage particles
+    "SpectatorsCanSee": true,
+
+    // Particle asset path configuration (fully customizable - no hardcoded paths!)
+    "Particles": {
+      // Placeholders: {digit} (0-9), {side} (fr/fl), {crit} (suffix or empty)
+      "PathPattern": "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}.vpcf",
+      "ChildPathPattern": "particles/thuyskieu/hit_damage/7mau_dmg_{digit}_{side}{crit}_child.vpcf",
+      // Set to false if your particle pack does not use child particles
+      "EnableChild": true,
+      "SideRight": "fr",    
+      "SideLeft": "fl",
+      "CritSuffix": "_crit",
+      "NonCritSuffix": ""
+    },
+
+    // Shotgun damage accumulation settings (pellet grouping)
+    "Shotgun": {
+      "Weapons": [ "xm1014", "nova", "mag7", "sawedoff" ],
+      // Time in seconds to accumulate shotgun pellets before displaying the total damage number
+      "AccumulationDelaySeconds": 0.1
+    },
+
+    // Display duration and positioning offsets
+    "Display": {
+      // Distance in game units to pull numbers toward the attacker (prevents clipping inside victim model, Default: 40.0)
+      "Distance": 40.0,
+      // Lifetime of the primary damage particle in seconds (Default: 0.5s)
+      "DurationSeconds": 0.5,
+      // Lifetime of the child damage particle in seconds (Default: 2.5s)
+      "ChildDurationSeconds": 2.5,
+      // Base spacing between digits
+      "SpacingBase": 6.0,
+      // Distance threshold where digit spacing scales up for readability
+      "DistanceScaleThreshold": 700.0,
+      // Vertical height offsets relative to the victim's origin (normal vs headshot)
+      "HeightOffsetStandingNormal": 35.0,
+      "HeightOffsetStandingCrit": 60.0,
+      "HeightOffsetDuckingNormal": 25.0,
+      "HeightOffsetDuckingCrit": 45.0,
+      // Random position spread for natural appearance
+      "RandomSpreadHorizontal": 1.0,
+      "RandomSpreadVertical": 10.0
+    },
+
+    // Optional audio feedback on hit
+    "Sounds": {
+      "Enabled": false,
+      "HitSoundEvent": "",
+      "CritSoundEvent": "",
+      "Volume": 0.5,
+      "Pitch": 1.0
+    }
+  }
+}

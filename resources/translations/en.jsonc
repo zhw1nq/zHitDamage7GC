@@ -1,0 +1,7 @@
+{
+  "prefix": "[gold]zHitDamage7GC [silver]» ",
+  "command.enabled": "[green]Damage numbers [default]enabled!",
+  "command.disabled": "[red]Damage numbers [default]disabled!",
+  "command.no_access": "[red]You do not have access to this feature!",
+  "command.only_players": "[red]This command can only be used by players!"
+}

@@ -1,0 +1,8 @@
+{
+  "prefix": "[gold]zHitDamage7GC [silver]» ",
+  "command.enabled": "[green]Schadensanzeige [default]aktiviert!",
+  "command.disabled": "[red]Schadensanzeige [default]deaktiviert!",
+  "command.no_access": "[red]Du hast keinen Zugriff auf diese Funktion!",
+  "command.only_players": "[red]Dieser Befehl kann nur von Spielern verwendet werden!"
+}
+

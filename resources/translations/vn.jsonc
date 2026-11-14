@@ -1,0 +1,8 @@
+{
+  "prefix": "[gold]zHitDamage7GC [silver]» ",
+  "command.enabled": "[green]Hiển thị số sát thương [default]đã bật!",
+  "command.disabled": "[red]Hiển thị số sát thương [default]đã tắt!",
+  "command.no_access": "[red]Bạn không có quyền sử dụng tính năng này!",
+  "command.only_players": "[red]Lệnh này chỉ dành cho người chơi trong game!"
+}
+
