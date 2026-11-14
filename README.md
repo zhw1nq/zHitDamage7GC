@@ -1,6 +1,6 @@
 # zHitDamage7GC
 
-Fortnite-style hit damage numbers display plugin for Counter-Strike 2 on **SwiftlyS2**.
+Hit damage numbers display plugin for Counter-Strike 2 on **SwiftlyS2**.
 
 ## Features
 

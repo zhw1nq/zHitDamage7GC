@@ -22,7 +22,7 @@ namespace zHitDamage7GC;
     Version = "1.0.0",
     Name = "zHitDamage7GC",
     Author = "vhming",
-    Description = "Fortnite-style hit damage numbers display for SwiftlyS2")]
+    Description = "Hit Damages")]
 public partial class zHitDamage7GC : BasePlugin, IZHitDamageApi
 {
     private IOptionsMonitor<PluginConfig> _configMonitor = null!;
